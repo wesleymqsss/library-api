@@ -2,8 +2,6 @@ package io.github.cursospring.libraryapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Setter;
-import lombok.Getter;
 import lombok.ToString;
 
 import java.time.LocalDate;
