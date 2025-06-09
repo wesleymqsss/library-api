@@ -5,6 +5,9 @@ import io.github.cursospring.libraryapi.model.Autor;
 import io.github.cursospring.libraryapi.repository.AutorRepository;
 import io.github.cursospring.libraryapi.repository.LivroRepository;
 import io.github.cursospring.libraryapi.validator.AutorValidator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,17 +15,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor //adicao dos poderes do lombok para injecao de dependencias
 public class AutorService {
 
     private final AutorRepository repository;
     private final AutorValidator validator;
     private final LivroRepository livroRepository;
 
-    public AutorService(AutorRepository repository, AutorValidator validator, LivroRepository livroRepository) {
-        this.validator = validator;
-        this.repository = repository;
-        this.livroRepository = livroRepository;
-    }
 
     public Autor salvar(Autor autor){
         validator.validar(autor);
@@ -46,6 +45,24 @@ public class AutorService {
             throw new OperacaoNaoPermitidaException("Não é permitido excluir autor que possui livros cadastrados.");
         }
         repository.delete(autor);
+    }
+
+    //novo metodo de pesquisa dinamica
+    public List<Autor> pesquisaByExample(String nome, String nacionalidade){
+        var auto =  new Autor();
+        auto.setNome(nome);
+        auto.setNacionalidade(nacionalidade);
+
+        ExampleMatcher matcher = ExampleMatcher
+                .matching()
+                .withIgnorePaths("id", "dataNascimento")//simulando se o objeto vinhesse completo, podemos ignorar parametros de pesquisa
+                .withIgnoreNullValues()//ignora valores nulos
+                .withIgnoreCase()//ignora se a paravra esta maiuscula ou minuscula
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING); //pesquisa na coluna o fim, inicio ou meio da palavra. como se fosse o %Like% do mysql
+
+        Example<Autor> autorExample = Example.of(auto, matcher);
+
+        return repository.findAll(autorExample);
     }
 
     public List<Autor> pesquisa(String nome, String nacionalidade){

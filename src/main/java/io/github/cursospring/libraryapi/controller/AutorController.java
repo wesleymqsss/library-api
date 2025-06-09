@@ -6,6 +6,8 @@ import io.github.cursospring.libraryapi.exceptions.OperacaoNaoPermitidaException
 import io.github.cursospring.libraryapi.exceptions.RegistroDuplicadoException;
 import io.github.cursospring.libraryapi.model.Autor;
 import io.github.cursospring.libraryapi.service.AutorService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -18,16 +20,13 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("autores")
+@RequiredArgsConstructor // poderes do lombok para injetar dependencias
 public class AutorController {
 
     private final AutorService autorService;
 
-    public AutorController(AutorService autorService){
-        this.autorService = autorService;
-    }
-
     @PostMapping
-    public ResponseEntity<Object> salvar(@RequestBody AutorDTO autor){
+    public ResponseEntity<Object> salvar(@RequestBody @Valid AutorDTO autor){
         try {
             Autor autorEntidade = autor.mapearParaAutor();
             autorService.salvar(autorEntidade);
@@ -87,7 +86,7 @@ public class AutorController {
             @RequestParam(value = "nome", required = false) String nome ,
             @RequestParam (value = "nacionalidade", required = false) String nacionalidade){
 
-        List<Autor> resultado = autorService.pesquisa(nome, nacionalidade);
+        List<Autor> resultado = autorService.pesquisaByExample(nome, nacionalidade);
         List<AutorDTO> lista =  resultado.stream().map(autor -> new AutorDTO(
                     autor.getId(),
                     autor.getNome(),
@@ -99,7 +98,7 @@ public class AutorController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Object> atualizar(@PathVariable("id") String id, @RequestBody AutorDTO autorDTO){
+    public ResponseEntity<Object> atualizar(@PathVariable("id") @Valid String id, @RequestBody AutorDTO autorDTO){
         try{
             var idAutor = UUID.fromString(id);
             Optional<Autor> autorOptional =  autorService.obterPorId(idAutor);
