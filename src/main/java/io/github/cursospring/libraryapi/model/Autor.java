@@ -35,7 +35,9 @@ public class Autor {
     private String nacionalidade;
 
 //    @OneToMany(mappedBy = "autor")
-    @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "autor", fetch = FetchType.LAZY
+//            cascade = CascadeType.ALL,
+    )
     private List<Livro> livros;
 
     @CreatedDate //sempre que for CRIADO um novo usuario a data CADASTRO é preenchida de forma autonoma
