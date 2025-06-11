@@ -2,14 +2,19 @@ package io.github.cursospring.libraryapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "livro")
 @Data //Gera Gatter end Setter, ToString, EqualsAndHashCode e RequiredArgsConstrutor
+@EntityListeners(AuditingEntityListener.class)
 public class Livro {
 
     @Id
@@ -37,59 +42,13 @@ public class Livro {
     @JoinColumn(name = "id_autor")
     private Autor autor;
 
-    public Autor getAutor() {
-        return autor;
-    }
+    @CreatedDate //sempre que for CRIADO um novo usuario a data CADASTRO é preenchida de forma autonoma
+    @Column(name = "data_cadastro")
+    private LocalDateTime dataCadastro;
 
-    public void setAutor(Autor autor) {
-        this.autor = autor;
-    }
+    @LastModifiedDate //sempre que for ATUALIZADO um novo usuario a data ATUALIZACAO é preenchida de forma autonoma
+    @Column(name = "data_atualizacao")
+    private LocalDateTime dataAtualizacao;
 
-    public LocalDate getDataPublicacao() {
-        return dataPublicacao;
-    }
 
-    public void setDataPublicacao(LocalDate dataPublicacao) {
-        this.dataPublicacao = dataPublicacao;
-    }
-
-    public GeneroLivro getGenero() {
-        return genero;
-    }
-
-    public void setGenero(GeneroLivro genero) {
-        this.genero = genero;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getIsbn() {
-        return isbn;
-    }
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
-
-    public BigDecimal getPreco() {
-        return preco;
-    }
-
-    public void setPreco(BigDecimal preco) {
-        this.preco = preco;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
 }
