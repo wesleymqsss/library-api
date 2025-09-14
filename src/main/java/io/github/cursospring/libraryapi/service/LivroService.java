@@ -20,4 +20,8 @@ public class LivroService {
     public Optional<Livro> obterPorId(UUID uuid){
         return repository.findById(uuid);
     }
+
+    public void deletar(Livro livro){
+        repository.delete(livro);
+    }
 }
