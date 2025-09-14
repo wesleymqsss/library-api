@@ -22,29 +22,16 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("autores")
 @RequiredArgsConstructor // poderes do lombok para injetar dependencias
-public class AutorController {
-
+public class AutorController implements GenericController{
     private final AutorService autorService;
     private final AutorMapper mapper;
 
     @PostMapping
     public ResponseEntity<Object> salvar(@RequestBody @Valid AutorDTO dto){
-        try {
-            Autor autor = mapper.toEntity(dto);
-            autorService.salvar(autor);
-
-            // Construção da URI.
-            URI location = ServletUriComponentsBuilder
-                    .fromCurrentRequest() // Pega a URI base da requisição atual (ex: http://localhost:8080/autores)
-                    .path("/{id}")      // Adiciona o template do path para o ID
-                    .buildAndExpand(autor.getId()) // Substitui {id} pelo valor real
-                    .toUri(); // Constrói a URI final
-
-            return ResponseEntity.created(location).build();
-        } catch (RegistroDuplicadoException e){
-            var erroDTO = ErroResposta.confilito(e.getMessage());
-            return ResponseEntity.status(erroDTO.status()).body(erroDTO);
-        }
+        Autor autor = mapper.toEntity(dto);
+        autorService.salvar(autor);
+        URI location = gerarHeaderLocation(autor.getId());
+        return ResponseEntity.created(location).build();
     }
 
     @GetMapping("{id}")
@@ -60,20 +47,16 @@ public class AutorController {
 
     @DeleteMapping("{id}")
     public ResponseEntity<Object> deletarAutor(@PathVariable("id") String id){
-        try{
-            var idAutor = UUID.fromString(id);
-            Optional<Autor> autorOptional =  autorService.obterPorId(idAutor);
+        var idAutor = UUID.fromString(id);
+        Optional<Autor> autorOptional =  autorService.obterPorId(idAutor);
 
-            if(autorOptional.isEmpty()){
-                return ResponseEntity.notFound().build();
-            }
-
-            autorService.deletar(autorOptional.get());
-            return ResponseEntity.noContent().build();
-        } catch(OperacaoNaoPermitidaException e){
-            var erroResposta = ErroResposta.respostaPadrao(e.getMessage());
-            return ResponseEntity.status(erroResposta.status()).body(erroResposta);
+        if(autorOptional.isEmpty()){
+            return ResponseEntity.notFound().build();
         }
+
+        autorService.deletar(autorOptional.get());
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
@@ -89,27 +72,21 @@ public class AutorController {
 
     @PutMapping("{id}")
     public ResponseEntity<Object> atualizar(@PathVariable("id") @Valid String id, @RequestBody AutorDTO autorDTO){
-        try{
-            var idAutor = UUID.fromString(id);
-            Optional<Autor> autorOptional =  autorService.obterPorId(idAutor);
+        var idAutor = UUID.fromString(id);
+        Optional<Autor> autorOptional =  autorService.obterPorId(idAutor);
 
-            if(autorOptional.isEmpty()){
-                return ResponseEntity.notFound().build();
-            }
-
-            var autor = autorOptional.get();
-            autor.setNome(autorDTO.nome());
-            autor.setNacionalidade(autorDTO.nacionalidade());
-            autor.setDataNascimento(autorDTO.dataNascimento());
-
-            autorService.atualizar(autor);
-
-            return  ResponseEntity.noContent().build();
-        }catch (RegistroDuplicadoException e){
-            var erroDTO = ErroResposta.confilito(e.getMessage());
-            return ResponseEntity.status(erroDTO.status()).body(erroDTO);
+        if(autorOptional.isEmpty()){
+            return ResponseEntity.notFound().build();
         }
 
+        var autor = autorOptional.get();
+        autor.setNome(autorDTO.nome());
+        autor.setNacionalidade(autorDTO.nacionalidade());
+        autor.setDataNascimento(autorDTO.dataNascimento());
+
+        autorService.atualizar(autor);
+
+        return  ResponseEntity.noContent().build();
     }
 
 }
